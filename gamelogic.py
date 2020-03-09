@@ -12,6 +12,7 @@ def gaussRowReduction(A):
     countColumn = len(A[0])
     current_column = 0
     current_row = 0
+    null_space_dim = 0
     while current_column < countColumn and current_row < countRow:
         #find non zero entry in column
         for row in range(current_row, countRow):
@@ -23,7 +24,7 @@ def gaussRowReduction(A):
             A[[rowPivotEntry, current_column]] = A[[current_column, rowPivotEntry]]
             for row in range(countRow):
                 if row == current_row:
-                    temp = A[current_column, current_column]#Запоминаем PivotEntry
+                    temp = A[current_column, current_column]#Remember PivotEntry
                     for column in range(countColumn):
                         A[row, column] = A[row, column] / temp
                 
@@ -31,7 +32,11 @@ def gaussRowReduction(A):
                 coef = A[row, current_column] / A[current_column, current_column]
   
                 for column in range(countColumn):
-                    A[row, column] = A[row, column] - A[current_column, column] * coef                 
+                    A[row, column] = A[row, column] - A[current_column, column] * coef
+        else:
+            null_space_dim = len(A) - current_row
+            break
         current_column += 1
         current_row += 1
-    return A
+    print(A)
+    return A, null_space_dim

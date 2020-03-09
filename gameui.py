@@ -6,6 +6,7 @@ from gf2 import GF2
 from light import Light
 import gamelogic as gl
 import numpy as np
+import random
 #from numpy.linalg import inv
 
 class GameUI(QMainWindow):
@@ -17,18 +18,21 @@ class GameUI(QMainWindow):
 
     def initUI(self):
         self.settingsMenu = self.menuBar().addMenu('Menu')
-        self.createNewGameFieldAction = QAction('Create new game field')
+        self.create_new_size_field_Action = QAction('Change size of game field')
         self.output_solution_in_console_action = QAction('get solution')
-        self.settingsMenu.addAction(self.createNewGameFieldAction)
+        self.create_random_field_action = QAction('Create random field')
+        self.settingsMenu.addAction(self.create_new_size_field_Action)
         self.settingsMenu.addAction(self.output_solution_in_console_action)
+        self.settingsMenu.addAction(self.create_random_field_action)
         self.setWindowTitle('Buttons')
         self.edit = QLineEdit_("3")
-        self.createNewGameFieldAction.triggered.connect(self.edit.show)
+        self.create_new_size_field_Action.triggered.connect(self.edit.show)
         self.output_solution_in_console_action.triggered.connect(self.get_solution)
+        self.create_random_field_action.triggered.connect(self.create_random_field)
         self.edit.textEditDone.connect(self.creatingGameField)
         self.desktopWidget = QDesktopWidget()
         self.lights = []
-        self.dimension_of_grid = 2
+        self.dimension_of_grid = 4
         self.creatingGameField(self.dimension_of_grid)
         
     def creatingGameField(self, dimension): 
@@ -77,9 +81,29 @@ class GameUI(QMainWindow):
         base = GF2array(gl.lightsoutbase(self.dimension_of_grid))
         e = GF2array(np.eye(self.dimension_of_grid*self.dimension_of_grid))
         res_matrix = np.hstack((base,e))
-        res_matrix = gl.gaussRowReduction(res_matrix)
-        inverse = res_matrix[:,self.dimension_of_grid*self.dimension_of_grid:]
-        print(np.reshape(np.dot(inverse,matrix_of_grid), (self.dimension_of_grid,self.dimension_of_grid)))
+        res_matrix, dim = gl.gaussRowReduction(res_matrix)
+        print(dim)
+        try:
+            inverse = res_matrix[:,self.dimension_of_grid*self.dimension_of_grid:]
+            basis_of_null_space = []
+            sol = np.dot(inverse,matrix_of_grid)
+            print('solution',sol)
+            if dim > 0:
+               basis_of_null_space = res_matrix[-dim:,self.dimension_of_grid*self.dimension_of_grid:]
+               print(basis_of_null_space, 'basis_of_null')
+               for l in basis_of_null_space:
+                    print(np.array([x + y for x,y in zip(sol, l)]).reshape((self.dimension_of_grid,self.dimension_of_grid)))
+            #print(basis_of_null_space)
+            #print(np.reshape(np.dot(inverse,matrix_of_grid), (self.dimension_of_grid,self.dimension_of_grid)))
+        except BaseException:
+            print(BaseException)
+        
+    def create_random_field(self):
+        for row_of_lights in self.lights:
+            for light in row_of_lights:
+                if random.random() > 0.5:
+                        light.change_color()
+        
 
 class QLineEdit_(QLineEdit):
     
