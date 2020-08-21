@@ -1,13 +1,10 @@
-import sys
 from PyQt5.QtWidgets import (QDesktopWidget, QWidget, QLineEdit, QMainWindow, QPushButton,
-    QHBoxLayout, QVBoxLayout, QApplication, QGridLayout, QSpacerItem, QSizePolicy, QAction)
+    QHBoxLayout, QVBoxLayout, QGridLayout, QSpacerItem, QSizePolicy, QAction)
 from PyQt5.QtCore import  pyqtSignal
-from gf2 import GF2
 from light import Light
 import gamelogic as gl
-import numpy as np
 import random
-#from numpy.linalg import inv
+from qline import QLineEdit_ 
 
 class GameUI(QMainWindow):
 
@@ -73,57 +70,20 @@ class GameUI(QMainWindow):
         #centerPoint = self.desktopWidget.availableGeometry().center()
         #self.move(centerPoint.x() - (dimension / 2) * 120, centerPoint.y() - (dimension / 2) * 120)
         
-    def get_solution(self):
-        matrix_of_grid = []
-        for row_of_lights in self.lights:
-            for light in row_of_lights:
-                matrix_of_grid.append(light.is_light_lit)
-        base = GF2array(gl.lightsoutbase(self.dimension_of_grid))
-        e = GF2array(np.eye(self.dimension_of_grid*self.dimension_of_grid))
-        res_matrix = np.hstack((base,e))
-        res_matrix, dim = gl.gaussRowReduction(res_matrix)
-        print(dim)
-        try:
-            inverse = res_matrix[:,self.dimension_of_grid*self.dimension_of_grid:]
-            basis_of_null_space = []
-            sol = np.dot(inverse,matrix_of_grid)
-            print('solution',sol)
-            if dim > 0:
-               basis_of_null_space = res_matrix[-dim:,self.dimension_of_grid*self.dimension_of_grid:]
-               print(basis_of_null_space, 'basis_of_null')
-               for l in basis_of_null_space:
-                    print(np.array([x + y for x,y in zip(sol, l)]).reshape((self.dimension_of_grid,self.dimension_of_grid)))
-            #print(basis_of_null_space)
-            #print(np.reshape(np.dot(inverse,matrix_of_grid), (self.dimension_of_grid,self.dimension_of_grid)))
-        except BaseException:
-            print(BaseException)
-        
+
     def create_random_field(self):
         for row_of_lights in self.lights:
             for light in row_of_lights:
                 if random.random() > 0.5:
                         light.change_color()
+                        
+    def get_solution(self):
+        row_of_grid = []
+        for row_of_lights in self.lights:
+            for light in row_of_lights:
+                row_of_grid.append(light.is_light_lit)
+        gl.get_solution(row_of_grid, self.dimension_of_grid)
         
-
-class QLineEdit_(QLineEdit):
-    
-    textEditDone = pyqtSignal(int)
-    
-    def __init__(self, str = ""):
-        super().__init__()
-        self.setText(str)
-        
-    def keyPressEvent(self, event):
-        if(event.key() == 16777220):#if enter is clicked
-            self.textEditDone.emit(int(self.text()))
-        else:
-            QLineEdit.keyPressEvent(self, event)
-            
-GF2array = np.vectorize(GF2)
-    
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = GameUI()
-    sys.exit(app.exec_())
+               
 
                 
