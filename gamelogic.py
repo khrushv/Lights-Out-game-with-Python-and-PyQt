@@ -51,11 +51,16 @@ def get_solution(row_grid, dim_grid):
     inverse = res_matrix[:,dim_grid**2:]
     basis_of_null_space = []
     sol = np.dot(inverse,row_grid)
-    print('Solution for full rank ')
-    print(sol.reshape((dim_grid, dim_grid)))
     if dim > 0:
         basis_of_null_space = res_matrix[-dim:,dim_grid**2:]
-        print('Solutions with non-zero rank of null space')
-        for l in basis_of_null_space:
-            print(np.array([x + y for x,y in zip(sol, l)]).reshape((dim_grid, dim_grid)))
+    row_grid = [np.int_(x) for x in row_grid]
+    is_orthogonal = [np.dot(np.asarray(row_grid), np.asarray([np.int_(x) for x in null_vector])) & 1 for null_vector in basis_of_null_space]
+    if not any(is_orthogonal):
+        print("This configurations is solvable")
+    else:
+        print("This configurations is not solvable")
+    print(sol.reshape((dim_grid,dim_grid)))
+    print('Solutions with non-zero rank of null space')
+    for l in basis_of_null_space:
+        print(np.array([x + y for x,y in zip(sol, l)]).reshape((dim_grid, dim_grid)))
     
